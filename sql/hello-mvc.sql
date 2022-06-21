@@ -56,8 +56,8 @@ select * from member;
 
 commit;
 
-
-
+-- POST /member/memberEnroll
+-- insert into member values (?, ?, ?, default, ?, ?, ?,  ?, ?, default, default);
 
 
 

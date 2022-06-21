@@ -5,6 +5,18 @@
  	String msg = (String) session.getAttribute("msg");
  	if(msg != null) session.removeAttribute("msg"); // 한 번 만 사용 후 제거
  	Member loginMember = (Member) session.getAttribute("loginMember"); // jsp에서 자동 import = 타입에 커서를 놓고 ctrl+space
+ 	
+ 	String saveId = null;
+ 	Cookie[] cookies = request.getCookies();
+ 	for(Cookie c : cookies){
+ 		String name = c.getName();
+ 		String value = c.getValue();
+ 		System.out.println("[cookie] " + name + " = " + value);
+ 		if("saveId".equals(name)){
+ 			saveId = value;
+ 		}
+ 	}
+ 	
  %>
 <!DOCTYPE html>
 <html>
@@ -18,7 +30,7 @@ window.onload = () => {
 <% if(msg != null) { %>
 	alert("<%= msg %>");
 <% } %>	
-	
+<% if(loginMember == null) {%>
 	document.loginFrm.onsubmit = (e) => {
 		const memberId = document.querySelector("#memberId");
 		const password = document.querySelector("#password");
@@ -35,6 +47,7 @@ window.onload = () => {
 			return false;
 		}
 	};
+<% } %>
 };
 </script>
 </head>
@@ -48,7 +61,8 @@ window.onload = () => {
 	 	       <form id="loginFrm" name="loginFrm" action="<%= request.getContextPath() %>/member/login" method="POST">
 		            <table>
 		                <tr>
-		                    <td><input type="text" name="memberId" id="memberId" placeholder="아이디" tabindex="1"></td>
+		                    <td><input type="text" name="memberId" id="memberId" placeholder="아이디" tabindex="1"
+		                    		value="<%= saveId != null ? saveId : ""%>"></td>
 		                    <td><input type="submit" value="로그인" tabindex="3"></td>
 		                </tr>
 		                <tr>
@@ -57,9 +71,11 @@ window.onload = () => {
 		                </tr>
 		                <tr>
 		                    <td colspan="2">
-		                        <input type="checkbox" name="saveId" id="saveId" />
+		                        <input type="checkbox" name="saveId" id="saveId"
+		                        		<%= saveId != null ? "checked" : "" %>/>
 		                        <label for="saveId">아이디저장</label>&nbsp;&nbsp;
-		                        <input type="button" value="회원가입">
+		                        <input type="button" value="회원가입"
+		                        	onclick="location.href='<%= request.getContextPath() %>/member/memberEnroll';">
 		                    </td>
 		                </tr>
 		            </table>
@@ -72,7 +88,8 @@ window.onload = () => {
 	     			</tr>
 	     			<tr>
 	     				<td>
-	     					<input type="button" value="내정보보기" />
+	     					<input type="button" value="내정보보기"
+	     						onclick="location.href='<%= request.getContextPath() %>/member/memberView';"/>
 	     					<input type="button" value="로그아웃"
 	     						onclick="location.href='<%= request.getContextPath() %>/member/logout';"/>
 	     				</td>
