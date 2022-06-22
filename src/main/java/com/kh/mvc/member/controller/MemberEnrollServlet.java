@@ -23,7 +23,7 @@ public class MemberEnrollServlet extends HttpServlet {
 	private MemberService memberService = new MemberService();
 
 	/**
-	 * 회원가입폼 요청
+	 * GET 회원가입폼 요청
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.getRequestDispatcher("/WEB-INF/views/member/memberEnroll.jsp")
@@ -31,7 +31,7 @@ public class MemberEnrollServlet extends HttpServlet {
 	}
 
 	/**
-	 * db insert 요청
+	 * POST db insert 요청
 	 * 
 	 * insert into member values (?, ?, ?, default, ?, ?, ?, ?, ?, default, default)
 	 */

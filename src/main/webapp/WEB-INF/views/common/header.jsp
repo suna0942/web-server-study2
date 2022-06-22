@@ -8,13 +8,15 @@
  	
  	String saveId = null;
  	Cookie[] cookies = request.getCookies();
- 	for(Cookie c : cookies){
- 		String name = c.getName();
- 		String value = c.getValue();
- 		System.out.println("[cookie] " + name + " = " + value);
- 		if("saveId".equals(name)){
- 			saveId = value;
- 		}
+ 	if(cookies != null) {
+	 	for(Cookie c : cookies){
+	 		String name = c.getName();
+	 		String value = c.getValue();
+	 		System.out.println("[cookie] " + name + " = " + value);
+	 		if("saveId".equals(name)){
+	 			saveId = value;
+	 		}
+	 	} 		
  	}
  	
  %>

@@ -8,43 +8,46 @@
 			<tr>
 				<th>아이디<sup>*</sup></th>
 				<td>
-					<input type="text" placeholder="4글자이상" name="memberId" id="_memberId" required>
+					<input type="text" placeholder="4글자이상" name="memberId" id="_memberId" value="" required>
+					<input type="button" value="중복검사" onclick="checkIdDuplicate();" />
+					<input type="hidden" id="idValid" value="0"/>
+					<%-- 중복검사 전 0, 중복검사 후(유요한 아이디) 1 --%>
 				</td>
 			</tr>
 			<tr>
 				<th>패스워드<sup>*</sup></th>
 				<td>
-					<input type="password" name="password" id="_password" required><br>
+					<input type="password" name="password" id="_password" value="" required><br>
 				</td>
 			</tr>
 			<tr>
 				<th>패스워드확인<sup>*</sup></th>
 				<td>	
-					<input type="password" id="passwordCheck" required><br>
+					<input type="password" id="passwordCheck" value="" required><br>
 				</td>
 			</tr>  
 			<tr>
 				<th>이름<sup>*</sup></th>
 				<td>	
-				<input type="text"  name="memberName" id="memberName" required><br>
+				<input type="text"  name="memberName" id="memberName" value="" required><br>
 				</td>
 			</tr>
 			<tr>
 				<th>생년월일</th>
 				<td>	
-				<input type="date" name="birthday" id="birthday"><br />
+				<input type="date" name="birthday" id="birthday" value=""><br />
 				</td>
 			</tr> 
 			<tr>
 				<th>이메일</th>
 				<td>	
-					<input type="email" placeholder="abc@xyz.com" name="email" id="email"><br>
+					<input type="email" placeholder="abc@xyz.com" name="email" id="email" value=""><br>
 				</td>
 			</tr>
 			<tr>
 				<th>휴대폰<sup>*</sup></th>
 				<td>	
-					<input type="tel" placeholder="(-없이)01012345678" name="phone" id="phone" maxlength="11" required><br>
+					<input type="tel" placeholder="(-없이)01012345678" name="phone" id="phone" maxlength="11" value="" required><br>
 				</td>
 			</tr>
 			<tr>
@@ -71,7 +74,36 @@
 		<input type="reset" value="취소">
 	</form>
 </section>
+<form action="<%= request.getContextPath() %>/member/checkIdDuplicate" name="checkIdDuplicateFrm">
+	<input type="hidden" name="memberId" />
+</form>
 <script>
+/**
+ * 사용자가 입력한 id 중복여부 검사
+ * - 폼을 팝업에서 제출
+ */
+const checkIdDuplicate = () => {
+	const memberId = document.querySelector("#_memberId");
+	if(!/^[a-zA-Z0-9]{4,}$/.test(memberId.value)){
+		console.log(memberId.value);
+		alert("유효한 아이디를 입력해주세요.");
+		memberId.select();
+		return;
+	}
+	
+	// popup
+	const title = "checkIdDuplicatePopup";
+	const spec = "width=300px, height=300px";
+	const popup = open("", title, spec);
+	
+	// form제어
+	const frm = document.checkIdDuplicateFrm;
+	frm.target = title; // 폼을 제출하는 대상이 현재 윈도우
+	frm.memberId.value = memberId.value;
+	frm.submit();
+	
+};
+
 /**
  * 비밀번호 일치여부 검사(blur 발생 시)
  */
@@ -83,7 +115,10 @@ document.querySelector("#passwordCheck").onblur = (e) => {
 		password.select();
 	}
 };
- 
+
+document.querySelector("#_memberId").onchange = (e) => {
+	document.querySelector("#idValid").value = 0;
+};
 
 /**
  * 폼 유효성 검사
@@ -95,6 +130,14 @@ document.memberEnrollFrm.onsubmit = (e) => {
 		memberId.select();
 		return false;
 	}
+	
+	const idValid = document.querySelector("#idValid");
+	if(idValid.value !== "1"){
+		alert("아이디 중복 검사해주세요.");
+		memberId.nextElementSibling.focus();
+		return false;
+	}
+	
 	const password = document.querySelector("#_password");
 	if(!/^[a-zA-Z0-9!@#$%^&*()]{4,}$/.test(password.value)){
 		alert("비밀번호는 영문자/숫자/특수문자(!@#$%^&*())로 최소 4글자 이상이어야합니다.");

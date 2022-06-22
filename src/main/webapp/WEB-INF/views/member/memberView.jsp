@@ -3,7 +3,7 @@
 <%@ page import = "com.kh.mvc.member.model.dto.Gender"%>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 <script>
-/* const updateMember = () => {
+/* document.memberUpdateFrm.onsubmit = () => {
 	document.querySelector("#password").onblur = (e) => {
 		if(!/ /.test(password.value)){
 			alert("비밀번호는 영문자/숫자/특수문자(!@#$%^&*())로 최소 4글자 이상이어야합니다.");
@@ -21,6 +21,10 @@
 }; */
 
 </script>
+<%
+	String email = loginMember.getEmail() != null ? loginMember.getEmail() : "";
+
+%>
 <section id=enroll-container>
 	<h2>회원 정보</h2>
 	<form name="memberUpdateFrm" method="post">
@@ -58,7 +62,7 @@
 			<tr>
 				<th>이메일</th>
 				<td>	
-					<input type="email" placeholder="abc@xyz.com" name="email" id="email" value="<%= loginMember.getEmail() %>"><br>
+					<input type="email" placeholder="abc@xyz.com" name="email" id="email" value="<%=email %>"><br>
 				</td>
 			</tr>
 			<tr>
@@ -95,20 +99,28 @@
 				</td>
 			</tr>
 		</table>
-        <input type="button" onclick="updateMember();" value="정보수정"/>
+        <input type="submit" value="정보수정"/>
         <input type="button" onclick="deleteMember();" value="탈퇴"/>
 	</form>
 </section>
+<form action="" name="memberDelFrm"></form>
 <script>
+/**
+ * POST / member/memberDelete
+ * memberDelFrm 제출
+ */
+const deleteMember = () => {
+	
+};
+
 const genderCheck = document.querySelectorAll("[name=gender]");
 <%
 	Gender gender = loginMember.getGender();
-	System.out.println(gender);
-	if(gender.equals(gender.M)){
+	if(gender.M.equals(gender)){
 %>
 		genderCheck[0].checked = true;
 <%
-	} else {
+	} else if(gender.F.equals(gender)) {
 %>
 		genderCheck[1].checked = true;
 <%
@@ -119,16 +131,17 @@ const hobbyCheck = document.querySelectorAll("[name=hobby]");
 
 <%
 	String hobby = loginMember.getHobby();
-	System.out.println(hobby);
 	String[] hobbies = hobby.split(",");
 	
-	for(int i = 0; i < hobbies.length; i++){ %>
-		for(let j = 0; j < hobbyCheck.length; j++){
-			if(hobbyCheck[j].value == '<%= hobbies[i]%>'){
-				hobbyCheck[j].checked = true;
+	if(hobbies != null){
+		for(int i = 0; i < hobbies.length; i++){ %>
+			for(let j = 0; j < hobbyCheck.length; j++){
+				if(hobbyCheck[j].value == '<%= hobbies[i]%>'){
+					hobbyCheck[j].checked = true;
+				}
 			}
-		}
 <%		
+		}
 	}
 %>
 
