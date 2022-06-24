@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.kh.mvc.member.model.dto.Gender;
@@ -69,7 +70,7 @@ public class MemberDao {
 		return member;
 	}
 	
-	public List<Member> findAll(Connection conn) {
+	public List<Member> findAll(Connection conn, Map<String, Object> param) {
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		List<Member> list = new ArrayList<>(); // 멤버가 없어도 비어있는 리스트가 넘어옴 때문에 null로 초기화하지 않음
@@ -77,6 +78,8 @@ public class MemberDao {
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, (int)param.get("start"));
+			pstmt.setInt(2, (int)param.get("end"));
 			rset = pstmt.executeQuery();
 			while(rset.next()) {
 				Member member = handleMemberResultSet(rset);
@@ -213,11 +216,88 @@ public class MemberDao {
 				throw new MemberException("회원 삭제 오류!", e);
 			} finally {
 				close(pstmt);
-			} 
-			
+			} 			
 			return result;
 		}
 
+	public int getTotalContent(Connection conn) {
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		int totalContent = 0;
+		String sql = prop.getProperty("getTotalContent");
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rset = pstmt.executeQuery();
+			// 1행 1열 결과 반환
+			if(rset.next())
+				totalContent = rset.getInt(1);
+		} catch (SQLException e) {
+			throw new MemberException("전체 회원 수 조회 오류", e);
+		} finally {			
+			close(rset);
+			close(pstmt);
+		}	
+		return totalContent;
+	}
+
+	public List<Member> findMemberLike(Connection conn, Map<String, Object> param) {
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		List<Member> list = new ArrayList<>();
+		String sql = prop.getProperty("findMemberLike");
+		// select * from member where # like ? -> pstmt에 전달하기 전에 # 내용을 채워넣어야 함
+		String col = (String) param.get("searchType");
+		String val = (String) param.get("searchKeyword");
+		int start = (int) param.get("start");
+		int end = (int) param.get("end");
+		sql = sql.replace("#", col);
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + val + "%");
+			pstmt.setInt(2, start);
+			pstmt.setInt(3, end);
+			
+			rset = pstmt.executeQuery();
+			while(rset.next()) {
+				list.add(handleMemberResultSet(rset));
+			}
+			
+		} catch (SQLException e) {
+			throw new MemberException("관리자 회원 검색 오류!", e);
+		} finally {
+			close(rset);
+			close(pstmt);
+		}		
+		return list;
+	}
+
+	public int getTotalContentLike(Connection conn, Map<String, Object> param) {
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		int totalContent = 0;
+		String sql = prop.getProperty("getTotalContentLike");
+		String col = (String) param.get("searchType");
+		String val = (String) param.get("searchKeyword");
+		sql = sql.replace("#", col);
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + val + "%");
+			rset = pstmt.executeQuery();
+			if(rset.next())
+				totalContent = rset.getInt(1);
+			
+		} catch (SQLException e) {
+			throw new MemberException("관리자 검색된 회원수 조회 오류!", e);
+		} finally {
+			close(rset);
+			close(pstmt);
+		}
+		
+		return totalContent;
+	}
 
 
 }
