@@ -2,32 +2,16 @@
     pageEncoding="UTF-8"%>
 <%@ page import = "com.kh.mvc.member.model.dto.Gender"%>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
-<script>
-/* document.memberUpdateFrm.onsubmit = () => {
-	document.querySelector("#password").onblur = (e) => {
-		if(!/ /.test(password.value)){
-			alert("비밀번호는 영문자/숫자/특수문자(!@#$%^&*())로 최소 4글자 이상이어야합니다.");
-		}
-	};
-	
-	document.querySelector("#passwordCheck").onblur = (e) => {
-		const password = document.querySelector("#password");
-		const passwordCheck = e.target;
-		if(password.value !== passwordCheck.value){
-			alert("비밀번호가 일치하지 않습니다.");
-			password.select();
-		}
-	};
-}; */
-
-</script>
 <%
 	String email = loginMember.getEmail() != null ? loginMember.getEmail() : "";
 
 %>
 <section id=enroll-container>
 	<h2>회원 정보</h2>
-	<form name="memberUpdateFrm" method="post">
+	<form 
+		name="memberUpdateFrm"
+		action="<%=request.getContextPath() %>/member/memberUpdate" 
+		method="post">
 		<table>
 			<tr>
 				<th>아이디<sup>*</sup></th>
@@ -35,18 +19,6 @@
 					<input type="text" name="memberId" id="memberId" value="<%= loginMember.getMemberId() %>" readonly>
 				</td>
 			</tr>
-			<tr>
-				<th>패스워드<sup>*</sup></th>
-				<td>
-					<input type="password" name="password" id="password" value="" required>
-				</td>
-			</tr>
-			<tr>
-				<th>패스워드확인<sup>*</sup></th>
-				<td>	
-					<input type="password" id="passwordCheck" value="" required><br>
-				</td>
-			</tr> 
 			<tr>
 				<th>이름<sup>*</sup></th>
 				<td>	
@@ -62,7 +34,7 @@
 			<tr>
 				<th>이메일</th>
 				<td>	
-					<input type="email" placeholder="abc@xyz.com" name="email" id="email" value="<%=email %>"><br>
+					<input type="email" placeholder="abc@xyz.com" name="email" id="email" value="<%= email %>"><br>
 				</td>
 			</tr>
 			<tr>
@@ -100,18 +72,46 @@
 			</tr>
 		</table>
         <input type="submit" value="정보수정"/>
+        <input type="button" value="비밀번호 변경" onclick="updatePassword();"/>
         <input type="button" onclick="deleteMember();" value="탈퇴"/>
 	</form>
 </section>
-<form action="" name="memberDelFrm"></form>
+<!-- 회원탈퇴폼 : POST /member/memberDelete 전송을 위해 시각화되지 않는 폼태그 이용 -->
+<form name="memberDelFrm" action="<%= request.getContextPath() %>/member/memberDelete" method="POST">
+	<input type="hidden" name="memberId" value="<%= loginMember.getMemberId() %>" />
+</form>
 <script>
+const updatePassword = () => {
+	location.href = "<%= request.getContextPath() %>/member/passwordUpdate";
+};
 /**
  * POST / member/memberDelete
  * memberDelFrm 제출
  */
+ 
 const deleteMember = () => {
-	
+	if(confirm("정말로 탈퇴하시겠습니까?"))
+		document.memberDelFrm.submit();
 };
+
+/**
+ * 폼 유효성 검사
+ */
+document.memberUpdateFrm.onsubmit = (e) => {
+	const memberName = document.querySelector("#memberName");
+	if(!/^[가-힣]{2,}$/.test(memberName.value)){
+		alert("한글 2글자이상 입력해주세요");
+		memberName.select();
+		return false;
+	}
+	
+	const phone = document.querySelector("#phone");
+	if(!/^010[0-9]{8}$/.test(phone.value)){
+		alert("유효한 전화번호를 입력해주세요");
+		phone.select();
+		return false;
+	}
+}
 
 const genderCheck = document.querySelectorAll("[name=gender]");
 <%
@@ -130,21 +130,35 @@ const genderCheck = document.querySelectorAll("[name=gender]");
 const hobbyCheck = document.querySelectorAll("[name=hobby]");
 
 <%
-	String hobby = loginMember.getHobby();
-	String[] hobbies = hobby.split(",");
-	
-	if(hobbies != null){
-		for(int i = 0; i < hobbies.length; i++){ %>
-			for(let j = 0; j < hobbyCheck.length; j++){
-				if(hobbyCheck[j].value == '<%= hobbies[i]%>'){
-					hobbyCheck[j].checked = true;
+	if(loginMember.getHobby() != null){
+		String hobby = loginMember.getHobby();
+		String[] hobbies = hobby.split(",");
+		if(hobbies != null){
+			for(int i = 0; i < hobbies.length; i++){ %>
+				for(let j = 0; j < hobbyCheck.length; j++){
+					if(hobbyCheck[j].value == '<%= hobbies[i]%>'){
+						hobbyCheck[j].checked = true;
+					}
 				}
+	<%
 			}
-<%		
 		}
 	}
 %>
 
 </script>
 
+<%--
+강사님 작성 코드
+<%!
+/**
+* compile시 메소드로 선언처리됨.
+* 선언위치는 어디든 상관없다.
+*/ 
+public String hobbyChecked(List<String> hobbyList, String hobby){
+	return hobbyList != null && hobbyList.contains(hobby) ? "checked" : "";
+}
+
+%>
+--%>
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

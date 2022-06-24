@@ -2,9 +2,11 @@ package com.kh.mvc.member.model.service;
 
 import static com.kh.mvc.common.JdbcTemplate.*;
 import java.sql.Connection;
+import java.util.List;
 
 import com.kh.mvc.member.model.dao.MemberDao;
 import com.kh.mvc.member.model.dto.Member;
+import com.kh.mvc.member.model.exception.MemberException;
 
 public class MemberService {
 	private MemberDao memberDao = new MemberDao();
@@ -24,6 +26,7 @@ public class MemberService {
 		close(conn);
 		return member;
 	}
+
 	
 	/**
 	 * DML요청 - service
@@ -49,5 +52,67 @@ public class MemberService {
 		}
 		return result;
 	}
+
+	public int updateMember(Member member) {
+		Connection conn = getConnection();
+		int result = 0;
+		try {
+			result = memberDao.updateMember(conn, member);
+			commit(conn);
+		} catch(Exception e) {
+			rollback(conn);
+			throw e; // controller에 예외 던짐.
+		} finally {
+			close(conn);
+		}
+		return result;
+	}
+
+
+	public int updatePassword(String memberId, String newPassword) {
+		Connection conn = getConnection();
+		int result = 0;
+		try {
+			result = memberDao.updatePassword(conn, memberId, newPassword);
+			commit(conn);
+		}
+		catch(Exception e) {
+			rollback(conn);
+			throw e;
+		}
+		finally {
+			close(conn);
+		}
+		return result;
+	}
+
+
+	public List<Member> findAll() {
+		Connection conn = getConnection();
+		List<Member> list = memberDao.findAll(conn);
+		close(conn);
+		return list;
+	}
+
+
+	public int deleteMember(String memberId) {
+		Connection conn = null;
+		int result = 0;
+		try{
+			conn = getConnection();
+			result = memberDao.deleteMember(conn, memberId);
+//			update와 delete는 간혹 0이 들어올 수 있음
+			if(result == 0)
+				throw new MemberException("해당 회원은 존재하지 않습니다.");
+			commit(conn);
+		} catch (Exception e) {
+			rollback(conn);
+			throw e;
+		} finally {
+			close(conn);			
+		}
+		return result;
+	}
+
 	
 }

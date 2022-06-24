@@ -1,6 +1,7 @@
 package com.kh.mvc.member.model.dao;
 
 import static com.kh.mvc.common.JdbcTemplate.close;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -9,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.kh.mvc.member.model.dto.Gender;
@@ -54,19 +57,7 @@ public class MemberDao {
 			rset = pstmt.executeQuery();
 			
 			while(rset.next()) {
-				memberId = rset.getString("member_id");
-				String password = rset.getString("password");
-				String memberName = rset.getString("member_name");
-				MemberRole memberRole = MemberRole.valueOf(rset.getString("member_role"));
-				Gender gender = Gender.valueOf(rset.getString("gender")); // enum은 valueOf로 감싸면 알아서 변환해줌
-				Date birthday = rset.getDate("birthday");
-				String email = rset.getString("email");
-				String phone = rset.getString("phone");
-				String hobby = rset.getString("hobby");
-				int point = rset.getInt("point");
-				Timestamp enrollDate = rset.getTimestamp("enroll_date");
-				member = new Member(memberId, password, memberName, memberRole, gender,
-									birthday, email, phone, hobby, point, enrollDate);
+				member = handleMemberResultSet(rset);
 			}
 			
 		} catch (SQLException e) {
@@ -76,6 +67,50 @@ public class MemberDao {
 			close(pstmt);
 		}
 		return member;
+	}
+	
+	public List<Member> findAll(Connection conn) {
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		List<Member> list = new ArrayList<>(); // 멤버가 없어도 비어있는 리스트가 넘어옴 때문에 null로 초기화하지 않음
+		String sql = prop.getProperty("findAll");
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rset = pstmt.executeQuery();
+			while(rset.next()) {
+				Member member = handleMemberResultSet(rset);
+				list.add(member);
+			}
+			
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		finally {
+			close(rset);
+			close(pstmt);
+		}		
+		return list;
+	}
+
+	private Member handleMemberResultSet(ResultSet rset) throws SQLException {
+		String memberId = rset.getString("member_id");
+		String password = rset.getString("password");
+		String memberName = rset.getString("member_name");
+		MemberRole memberRole = MemberRole.valueOf(rset.getString("member_role"));
+		
+		String _gender = rset.getString("gender");
+		Gender gender = _gender != null ? Gender.valueOf(_gender) : null; // enum은 valueOf로 감싸면 알아서 변환해줌
+		
+		Date birthday = rset.getDate("birthday");
+		String email = rset.getString("email");
+		String phone = rset.getString("phone");
+		String hobby = rset.getString("hobby");
+		int point = rset.getInt("point");
+		Timestamp enrollDate = rset.getTimestamp("enroll_date");
+		return new Member(memberId, password, memberName, memberRole, gender,
+							birthday, email, phone, hobby, point, enrollDate);
 	}
 	
 	/**
@@ -115,4 +150,74 @@ public class MemberDao {
 		}
 		return result;
 	}
+
+	public int updateMember(Connection conn, Member member) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		String sql = prop.getProperty("updateMember");
+		// update member set password = ?, member_name = ?, gender = ?, birthday = ?, email = ?, phone = ?, hobby = ? where member_id = ?
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, member.getMemberName());
+			pstmt.setString(2, member.getGender() != null ? member.getGender().name() : null); // Gender.M
+			pstmt.setDate(3, member.getBirthday());
+			pstmt.setString(4, member.getEmail());
+			pstmt.setString(5, member.getPhone());
+			pstmt.setString(6, member.getHobby());
+			pstmt.setString(7, member.getMemberId());
+			
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			// service 예외 던짐(unchecked, 비지니스를 설명가능한 구체적 커스텀예외 전환)
+			throw new MemberException("회원정보수정 오류", e);
+		} finally {
+			close(pstmt);
+		}
+		return result;
+	}
+
+	public int updatePassword(Connection conn, String memberId, String newPassword) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		String sql = prop.getProperty("updatePassword");
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, newPassword);
+			pstmt.setString(2, memberId);
+			
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			throw new MemberException("비밀번호 변경 오류!", e);
+		}
+		finally {
+			close(pstmt);
+		}
+		return result;
+	}
+
+	   public int deleteMember(Connection conn, String membmerId) {
+			int result = 0;
+			PreparedStatement pstmt = null;
+			String query = prop.getProperty("deleteMember"); 
+
+			try {
+				pstmt = conn.prepareStatement(query);
+				pstmt.setString(1, membmerId);
+				result = pstmt.executeUpdate();
+				
+			} catch (SQLException e) {
+				throw new MemberException("회원 삭제 오류!", e);
+			} finally {
+				close(pstmt);
+			} 
+			
+			return result;
+		}
+
+
+
 }
