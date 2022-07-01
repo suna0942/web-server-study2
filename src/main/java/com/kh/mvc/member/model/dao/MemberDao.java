@@ -299,5 +299,23 @@ public class MemberDao {
 		return totalContent;
 	}
 
+	public int updateMemberRole(Connection conn, Member member) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		String sql = prop.getProperty("updateMemberRole");
+		// update member set member_role = ? where member_id = ?
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, member.getMemberRole().name());
+			pstmt.setString(2, member.getMemberId());
+			result = pstmt.executeUpdate();
+		} catch(Exception e) {
+			throw new MemberException("회원권한정보 수정 오류!", e);
+		} finally {
+			close(pstmt);
+		}
+		return result;
+	}
+
 
 }

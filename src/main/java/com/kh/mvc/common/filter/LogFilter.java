@@ -49,18 +49,18 @@ public class LogFilter implements Filter {
 		String uri = httpReq.getRequestURI(); // /mvc/member/enroll HttpServlestRequest에 있는 URI로 다운캐스팅 해줘야함
 		String method = httpReq.getMethod();
 		
-//		System.out.println("========================================");
-//		System.out.printf("%s %s%n", method, uri);
-//		System.out.println("----------------------------------------");
+		System.out.println("========================================");
+		System.out.printf("%s %s%n", method, uri);
+		System.out.println("----------------------------------------");
 		
 		// filter chain의 다음 filter를 호출(마지막 필터라면 servlet 호출) -> 메소드명이랑 동일하다고 재귀메소드가 아님
 		chain.doFilter(request, response);
 		
 		// 후처리
 		HttpServletResponse httpRes = (HttpServletResponse) response;
-//		System.out.println("________________________________________");
-//		System.out.println(httpRes.getStatus());
-//		System.out.println();
+		System.out.println("________________________________________");
+		System.out.println(httpRes.getStatus());
+		System.out.println();
 	}
 
 	/**

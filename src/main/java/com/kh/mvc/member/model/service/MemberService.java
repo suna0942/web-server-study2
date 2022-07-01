@@ -136,4 +136,22 @@ public class MemberService {
 		return totalContent;
 	}
 	
+	// dml
+	public int updateMemberRole(Member member) {
+		Connection conn = getConnection();
+		int result = 0;
+		try {
+			result = memberDao.updateMemberRole(conn, member);
+			commit(conn);
+		}
+		catch(Exception e) {
+			rollback(conn);
+			throw e;
+		}
+		finally {
+			close(conn);
+		}
+		return result;
+	}
+	
 }

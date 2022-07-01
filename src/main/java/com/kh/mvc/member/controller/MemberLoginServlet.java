@@ -72,7 +72,9 @@ public class MemberLoginServlet extends HttpServlet {
 			// 응답 302 redirect 전송.
 			// 브라우저에게 302 location으로 재요청을 명령.
 			// forward - DQL(requestDispatcher) / redirect - DML(responce)
-			response.sendRedirect(request.getContextPath() + "/"); // /mvc/ -> 그냥 /mvc를하면 파일명인줄 알기때문에 끝에도 / 를 붙여준다
+			String location = request.getHeader("Referer");
+			response.sendRedirect(location);
+//			response.sendRedirect(request.getContextPath() + "/"); // 원래 메인페이지// /mvc/ -> 그냥 /mvc를하면 파일명인줄 알기때문에 끝에도 / 를 붙여준다
 		} catch (IOException e) {
 			e.printStackTrace(); // 로깅
 			throw e; // tomcat에게 예외던짐
