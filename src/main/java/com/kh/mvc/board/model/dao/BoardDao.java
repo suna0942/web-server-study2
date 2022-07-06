@@ -61,6 +61,7 @@ public class BoardDao {
 			while(rset.next()) {
 				BoardExt board = handleBoardResultSet(rset);
 				board.setAttachCount(rset.getInt("attach_count"));
+				board.setCommentCount(rset.getInt("view_count"));
 				boardList.add(board);
 			}
 		} catch (SQLException e) {
@@ -368,5 +369,23 @@ public class BoardDao {
 		int commentRef = rset.getInt("comment_ref"); // null인 경우 0 반환
 		Timestamp regDate = rset.getTimestamp("reg_date");
 		return new BoardComment(no, commentLevel, writer, content, boardNo, commentRef, regDate);
+	}
+
+	public int deleteBoardComment(Connection conn, int boardCommentNo) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		String sql = prop.getProperty("deleteBoardComment");
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, boardCommentNo);
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			throw new BoardException("댓글/답글 삭제 오류!", e);
+		} finally {
+			close(pstmt);
+		}
+		return result;
 	}	
 }

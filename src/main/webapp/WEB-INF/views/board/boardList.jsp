@@ -1,3 +1,4 @@
+<%@page import="com.kh.mvc.board.model.dto.BoardComment"%>
 <%@page import="com.kh.mvc.common.HelloMvcUtils"%>
 <%@page import="com.kh.mvc.board.model.dto.BoardExt"%>
 <%@page import="java.text.SimpleDateFormat"%>
@@ -8,6 +9,7 @@
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 <%
 	List<Board> boardList = (List<Board>) request.getAttribute("boardList");
+	
 %>
 <link rel="stylesheet" href="<%=request.getContextPath()%>/css/board.css" />
 <section id="board-container">
@@ -33,6 +35,9 @@
 				<td><%= board.getNo() %></td>
 				<td>
 					<a href="<%= request.getContextPath()%>/board/boardView?no=<%= board.getNo() %>"><%= HelloMvcUtils.escapeXml(board.getTitle()) %></a>
+					<% if(board.getCommentCount() > 0) {%>
+					💬[<%= board.getCommentCount()%>]
+					<% } %>
 				</td>
 				<td><%= board.getWriter() %></td>
 				<td><%= new SimpleDateFormat("yyyy-MM-dd HH:mm").format(board.getRegDate()) %></td>

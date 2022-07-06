@@ -31,7 +31,7 @@ public class BoardCommentEnrollServlet extends HttpServlet {
 			String content = request.getParameter("content");
 			int boardNo = Integer.parseInt(request.getParameter("boardNo"));
 			int commentRef = Integer.parseInt(request.getParameter("commentRef"));
-			BoardComment boardComment = new BoardComment(0, commentLevel, writer, content, boardNo, 0, null);
+			BoardComment boardComment = new BoardComment(0, commentLevel, writer, content, boardNo, commentRef, null);
 			System.out.println("boardComment = " + boardComment);
 			
 			// 2. 업무로직

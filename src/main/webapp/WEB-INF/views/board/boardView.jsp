@@ -94,6 +94,10 @@
         	if(commentList != null && !commentList.isEmpty()){
         		SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd HH:mm");
         		for(BoardComment bc : commentList){
+        			boolean canDelete = loginMember != null && (
+        					loginMember.getMemberId().equals(bc.getWriter())
+        						|| loginMember.getMemberRole() == MemberRole.A
+        					);
         			
         		
         %>
@@ -109,6 +113,10 @@
         			<% if(bc.getCommentLevel() == CommentLevel.COMMENT) { %>
         			<button class="btn-reply" value="<%= bc.getNo()%>">답글</button>
         			<% } %>
+        			
+        			<% if(canDelete){ %>
+        			<button class="btn-delete" value="<%= bc.getNo()%>">삭제</button>
+        			<% } %>
         		</td>
         	</tr>
         <%
@@ -121,24 +129,78 @@
     
     
 </section>
+<form
+	action="<%= request.getContextPath() %>/board/boardCommentDelete" method="POST" name="boardCommentDelFrm">
+	<input type="hidden" name="no" />
+</form>
 <script>
+	document.querySelectorAll(".btn-delete").forEach((btn) => {
+		btn.addEventListener('click', (e) => {
+			if(confirm("해당 댓글을 정말 삭제하시겠습니까?")){
+				const {value} = e.target;
+				const frm = document.boardCommentDelFrm;
+				frm.no.value = value;
+				frm.submit();
+			}
+				
+		});
+		
+	});
+
+	document.querySelectorAll(".btn-reply").forEach((btn) => {
+		btn.addEventListener('click', (e) => {
+			<% if(loginMember == null){%>
+				loginAlert(); return
+			<% } %>
+			const {value} = e.target;
+			console.log(value);
+			
+			const tr = `
+			<tr>
+				<td colspan = "2" style="text-align:left;">
+					<form
+			            	name="boardCommentFrm"
+			            	action="<%=request.getContextPath()%>/board/boardCommentEnroll" method="post">
+			                <input type="hidden" name="boardNo" value="<%= board.getNo() %>" />
+			                <input type="hidden" name="writer" value="<%= loginMember != null ? loginMember.getMemberId() : "" %>" />
+			                <input type="hidden" name="commentLevel" value="2" />
+			                <input type="hidden" name="commentRef" value="\${value}" />    
+			                <textarea name="content" cols="60" rows="1"></textarea>
+			                <button type="submit" class="btn-comment-enroll2">등록</button>
+			        </form>
+		        </td>
+			</tr>`;
+			const target = e.target.parentElement.parentElement; // td > tr
+			target.insertAdjacentHTML('afterend', tr);
+			
+			
+		}, {once: true});
+	});
+	
+	
 	document.boardCommentFrm.content.addEventListener('focus', (e) => {
 		if(<%= loginMember == null %>)
 			loginAlert();	
 	});
 	
-	document.boardCommentFrm.addEventListener('submit', (e) => {
-		if(<%= loginMember == null %>){
-			loginAlert();
-			e.preventDefault();
-			return;
+	// 부모요소에서 자식 submit 이벤트 핸들링
+	document.addEventListener('submit', (e) => {
+		
+		// matches(selector) 선택자 일치여부를 반환
+		if(e.target.matches("form[name=boardCommentFrm]")){
+			if(<%= loginMember == null %>){
+				loginAlert();
+				e.preventDefault();
+				return;
+			}
+			
+			if(!/^(.|\n)+$/.test(e.target.content.value)){
+				alert("내용을 작성해주세요");
+				e.preventDefault();
+				return;
+			}
 		}
 		
-		if(!/^(.|\n)+$.test(e.target.content.value)/){
-			alert("내용을 작성해주세요");
-			e.preventDefault();
-			return;
-		}
 	});
 	const loginAlert = () => {
 		alert("로그인 후 이용할 수 있습니다.");

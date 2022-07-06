@@ -7,6 +7,7 @@ import java.util.List;
 public class BoardExt extends Board {
 	private int attachCount;
 	private List<Attachment> attachments = new ArrayList<>();
+	private int commentCount;
 	
 	public BoardExt() {
 		super();
@@ -14,6 +15,14 @@ public class BoardExt extends Board {
 
 	public BoardExt(int no, String title, String writer, String content, int readCount, Timestamp regDate) {
 		super(no, title, writer, content, readCount, regDate);
+	}
+	
+	public int getCommentCount() {
+		return commentCount;
+	}
+
+	public void setCommentCount(int commentCount) {
+		this.commentCount = commentCount;
 	}
 
 	public int getAttachCount() {
@@ -36,11 +45,12 @@ public class BoardExt extends Board {
 	public void addAttachMent(Attachment attach) {
 		this.attachments.add(attach);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "BoardExt [attachCount=" + attachCount + ", attachments=" + attachments + ", toString()="
-				+ super.toString() + "]";
+		return "BoardExt [attachCount=" + attachCount + ", attachments=" + attachments + ", commentCount="
+				+ commentCount + ", toString()=" + super.toString() + "]";
 	}
+	
 
 }
